@@ -5,11 +5,20 @@
       - apt-transport-https
       - apt-utils
       - curl
+      - git
       - gnupg
       - htop
       - unzip
       - xz-utils
     state: present
+    update_cache: true
+
+# [WARNING]: Module remote_tmp /root/.ansible/tmp did not exist and was created
+# with a mode of 0700, this may cause issues when running as another user. To
+# avoid this, create the remote_tmp dir with the correct permissions manually
+
+- name: Update apt cache
+  apt:
     update_cache: true
 
 - name: Download e install zabbix repositories
@@ -26,6 +35,17 @@
       - zabbix-agent
     state: present
     update_cache: true
+  when: zabbix_server_version is version('4.3', '>') # check 4.3
+
+- name: Install zabbix-server
+  apt:
+    name:
+      - zabbix-server-{{ db_engine }}
+      - zabbix-frontend-php
+      - zabbix-agent
+    state: present
+    update_cache: true
+  when: zabbix_server_version is version('4.3', '<=') # check 4.3
 
 - name: Install php-pgsql package
   apt:
